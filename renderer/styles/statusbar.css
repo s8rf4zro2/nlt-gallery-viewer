@@ -1,0 +1,71 @@
+/* -------------------------------------------------------------- statusbar */
+.statusbar {
+  grid-area: status;
+  height: var(--status-h);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+  font-family: var(--mono);
+  font-size: var(--fs-xs);
+  color: var(--text-faint);
+  background: var(--bg);
+  border-top: 1px solid var(--line);
+  z-index: 20;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.statusbar-spacer {
+  flex: 1 1 auto;
+}
+
+.statusbar-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+/*
+ * Three facets + their labels no longer fit the filter row on a narrow window,
+ * so the labels drop first and the selects fall back to their option text.
+ */
+@media (max-width: 1180px) {
+  .field-label {
+    display: none;
+  }
+
+  .field select {
+    min-width: 90px;
+    max-width: 160px;
+  }
+}
+
+/* The full shortcut legend is the first thing to go when space is tight. */
+@media (max-width: 1080px) {
+  .statusbar-hint {
+    display: none;
+  }
+}
+
+@media (max-width: 960px) {
+  .field select {
+    min-width: 80px;
+    max-width: 130px;
+  }
+
+  .search {
+    min-width: 110px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}

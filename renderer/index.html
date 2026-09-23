@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="color-scheme" content="dark" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: nlt-media: file:; media-src 'self' nlt-media: file: blob:; connect-src 'self' nlt-media: file: data:; object-src 'none'; base-uri 'none'; form-action 'none'"
+    />
+    <title>NLT Gallery Viewer</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <!-- ------------------------------------------------------------------ top -->
+    <header class="topbar">
+      <div class="topbar-row">
+        <h1 class="brand">
+          <span class="brand-dot" aria-hidden="true"></span>
+          NLT Gallery
+        </h1>
+
+        <nav class="tabs" id="tabs" role="tablist" aria-label="Game">
+          <button class="tab is-active" role="tab" aria-selected="true" data-game="nadia">
+            Nadia <span class="tab-count" id="count-nadia">–</span>
+          </button>
+          <button class="tab" role="tab" aria-selected="false" data-game="genesis">
+            Genesis <span class="tab-count" id="count-genesis">–</span>
+          </button>
+          <button class="tab" role="tab" aria-selected="false" data-game="symphony">
+            Symphony <span class="tab-count" id="count-symphony">–</span>
+          </button>
+        </nav>
+
+        <div class="topbar-spacer"></div>
+
+        <button class="btn btn-ghost" id="btnFolders" title="Select or change game folders">Folders</button>
+        <button class="btn btn-ghost" id="btnReload" title="Re-read the index JSON from .cache">Reload</button>
+      </div>
+
+      <div class="topbar-row topbar-row--filters">
+        <div class="search">
+          <svg class="search-icon" viewBox="0 0 16 16" aria-hidden="true">
+            <path
+              d="M11.2 10.1a5 5 0 1 0-1.1 1.1l3.3 3.3a.8.8 0 0 0 1.1-1.1l-3.3-3.3ZM7.5 11a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7Z"
+            />
+          </svg>
+          <input
+            type="search"
+            id="search"
+            placeholder="Filter by title, character, scene, act…  ( / )"
+            autocomplete="off"
+            spellcheck="false"
+            aria-label="Filter movies"
+          />
+          <button class="search-clear" id="searchClear" title="Clear filter" aria-label="Clear filter">×</button>
+        </div>
+
+        <label class="field">
+          <span class="field-label">Rating</span>
+          <select id="rating" aria-label="Rating filter">
+            <option value="nsfw" selected>NSFW Only</option>
+            <option value="all">NSFW + SFW</option>
+            <option value="sfw">SFW Only</option>
+          </select>
+        </label>
+
+        <label class="field">
+          <span class="field-label">Category</span>
+          <select id="prefix" aria-label="Category">
+            <option value="">All categories</option>
+          </select>
+        </label>
+
+        <label class="field">
+          <span class="field-label">Character</span>
+          <select id="character" aria-label="Character">
+            <option value="">All characters</option>
+          </select>
+        </label>
+
+        <label class="field">
+          <span class="field-label">Scene</span>
+          <select id="scene" aria-label="Scene">
+            <option value="">All scenes</option>
+          </select>
+        </label>
+
+        <button class="btn btn-ghost btn-clear-filters" id="btnClearFilters" hidden title="Reset all filters">✕ Reset</button>
+
+        <span class="result-count" id="resultCount">–</span>
+      </div>
+
+      <div class="topbar-row topbar-row--characters" id="characterRibbon" aria-label="Character quick filter"></div>
+    </header>
+
+    <!-- ----------------------------------------------------------------- grid -->
+    <main class="viewport" id="gridViewport" tabindex="-1">
+      <div class="sizer" id="gridSizer">
+        <div class="window" id="gridWindow"></div>
+      </div>
+    </main>
+
+    <!-- ---------------------------------------------------------------- states -->
+    <section class="state" id="stateLoading" hidden>
+      <div class="spinner" aria-hidden="true"></div>
+      <p>Reading index…</p>
+    </section>
+
+    <section class="state" id="stateEmpty" hidden>
+      <h2 id="emptyTitle">Nothing to show</h2>
+      <p id="emptyBody"></p>
+      <div class="state-actions">
+        <button class="btn btn-primary" id="btnEmptyFolders">Select Game Folders</button>
+        <button class="btn btn-ghost" id="btnEmptyReload">Reload index</button>
+      </div>
+    </section>
+
+    <!-- ---------------------------------------------------------------- modal -->
+    <div class="modal" id="modal" hidden>
+      <div class="modal-backdrop" data-close="1"></div>
+
+      <div class="modal-panel modal-theater" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <header class="modal-head modal-head-row">
+          <button class="btn btn-ghost" id="btnBack" title="Close (Esc)">←</button>
+
+          <div class="modal-heading">
+            <h2 class="modal-title" id="modalTitle">–</h2>
+            <p class="modal-sub" id="modalSub">–</p>
+          </div>
+
+          <div class="modal-tools">
+            <button class="btn btn-icon" id="btnPrev" title="Previous scene (⇧+P)">‹</button>
+            <span class="modal-pos" id="modalPos">–</span>
+            <button class="btn btn-icon" id="btnNext" title="Next scene (⇧+N)">›</button>
+            <button class="btn btn-icon is-active" id="btnSubtitles" title="Toggle Dialogue / Subtitles (C)">CC</button>
+            <button class="btn" id="btnQuality" title="Swap between the full and the -l proxy file (H)">Hi</button>
+            <button class="btn btn-icon" id="btnReveal" title="Reveal the file in Explorer">⧉</button>
+            <button class="btn btn-ghost btn-icon" id="btnClose" title="Close (Esc)" aria-label="Close">×</button>
+          </div>
+        </header>
+
+        <div class="modal-stage">
+          <div class="video-wrap" id="videoWrap">
+            <video id="modalVideo" playsinline preload="metadata"></video>
+
+            <div class="dialogue-overlay" id="dialogueOverlay" hidden>
+              <div class="dialogue-card" id="dialogueCard">
+                <div class="dialogue-speaker-wrap">
+                  <span class="dialogue-speaker" id="dialogueSpeaker">Speaker</span>
+                  <span class="dialogue-counter" id="dialogueCounter">1 / 1</span>
+                </div>
+                <div class="dialogue-content" id="dialogueText">Text</div>
+                <div class="dialogue-nav" id="dialogueNav">
+                  <button class="btn-dialogue-prev" id="btnDialoguePrev" title="Previous line">‹</button>
+                  <button class="btn-dialogue-next" id="btnDialogueNext" title="Next line">›</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="transport transport-overlay" role="group" aria-label="Playback controls">
+              <button class="btn" id="btnPlayPause" title="Play/pause (Space or K)">Play</button>
+              <button class="btn" id="btnBack10" title="Back 10 seconds (J)">−10s</button>
+              <button class="btn" id="btnFwd10" title="Forward 10 seconds (L)">+10s</button>
+
+              <input type="range" id="seekBar" min="0" max="0" step="0.01" value="0" aria-label="Seek" />
+              <span class="transport-time" id="timeLabel">0:00 / 0:00</span>
+            </div>
+          </div>
+
+          <div class="parts-strip" role="group" aria-label="Parts and variants">
+            <div class="variant-chips" id="variantChips" role="group" aria-label="Variant filter">
+              <button class="chip is-on" type="button" data-chip="all" aria-pressed="true">All</button>
+              <button class="chip" type="button" data-chip="O1" aria-pressed="false">Outfit 1</button>
+              <button class="chip" type="button" data-chip="O2" aria-pressed="false">Outfit 2</button>
+              <button class="chip" type="button" data-chip="NP" aria-pressed="false" style="display:none">No Panties</button>
+              <button class="chip" type="button" data-chip="alt" aria-pressed="false">ALT</button>
+            </div>
+
+            <ol class="part-rail" id="partRail" aria-label="Parts"></ol>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- --------------------------------------------------------- folders modal -->
+    <div class="modal" id="modalFolders" hidden>
+      <div class="modal-backdrop" data-close-folders="1"></div>
+
+      <div class="modal-panel modal-panel--dialog" role="dialog" aria-modal="true" aria-labelledby="foldersTitle">
+        <header class="modal-head modal-dialog-head">
+          <div class="modal-heading">
+            <h2 class="modal-title" id="foldersTitle">Game Folders Setup</h2>
+            <p class="modal-sub" id="foldersSub">Select the installation folder for each game.</p>
+          </div>
+          <button class="btn btn-ghost btn-icon" id="btnFoldersClose" title="Close (Esc)" aria-label="Close">×</button>
+        </header>
+
+        <div class="folders-body">
+          <div class="folders-autodetect">
+            <div class="autodetect-info">
+              <strong>Quick Auto-Detect</strong>
+              <span>Have your games inside one parent folder? Select it to auto-discover:</span>
+            </div>
+            <button class="btn" id="btnAutoDetect">Auto-detect…</button>
+          </div>
+
+          <div class="folder-group" data-game="nadia">
+            <div class="folder-group-header">
+              <div class="game-badge">Treasure of Nadia</div>
+              <span class="folder-status" id="statusNadia">Not configured</span>
+            </div>
+            <div class="folder-input-row">
+              <input type="text" class="folder-path" id="pathNadia" readonly placeholder="No folder selected" />
+              <button class="btn" id="btnBrowseNadia">Browse…</button>
+            </div>
+          </div>
+
+          <div class="folder-group" data-game="genesis">
+            <div class="folder-group-header">
+              <div class="game-badge">The Genesis Order</div>
+              <span class="folder-status" id="statusGenesis">Not configured</span>
+            </div>
+            <div class="folder-input-row">
+              <input type="text" class="folder-path" id="pathGenesis" readonly placeholder="No folder selected" />
+              <button class="btn" id="btnBrowseGenesis">Browse…</button>
+            </div>
+          </div>
+
+          <div class="folder-group" data-game="symphony">
+            <div class="folder-group-header">
+              <div class="game-badge">Symphony of the Serpent</div>
+              <span class="folder-status" id="statusSymphony">Not configured</span>
+            </div>
+            <div class="folder-input-row">
+              <input type="text" class="folder-path" id="pathSymphony" readonly placeholder="No folder selected" />
+              <button class="btn" id="btnBrowseSymphony">Browse…</button>
+            </div>
+          </div>
+
+          <div class="scan-progress" id="scanProgress" hidden>
+            <div class="spinner" aria-hidden="true"></div>
+            <span id="scanStatus">Scanning movies…</span>
+          </div>
+        </div>
+
+        <footer class="modal-foot">
+          <button class="btn btn-ghost" id="btnFoldersCancel">Cancel</button>
+          <button class="btn btn-primary" id="btnFoldersSave">Save & Scan Gallery</button>
+        </footer>
+      </div>
+    </div>
+
+    <!-- -------------------------------------------------------------- statusbar -->
+    <footer class="statusbar">
+      <span id="status">Ready</span>
+      <span class="statusbar-spacer"></span>
+      <span class="statusbar-hint">
+        <kbd>←</kbd><kbd>→</kbd><kbd>↑</kbd><kbd>↓</kbd> move · <kbd>Enter</kbd> play · <kbd>Esc</kbd> back ·
+        <kbd>/</kbd> search
+      </span>
+    </footer>
+
+    <script type="module" src="app.js"></script>
+  </body>
+</html>

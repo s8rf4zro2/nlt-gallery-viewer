@@ -1,0 +1,57 @@
+/* ------------------------------------------------------------- state panes */
+/*
+ * Occupies the same grid area as the viewport instead of a hardcoded
+ * `inset: <topbar height>`, tracking real topbar height at every width.
+ */
+.state {
+  grid-area: main;
+  position: relative;
+  min-height: 0;
+  min-width: 0;
+  max-width: 100%;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 12px;
+  text-align: center;
+  padding: 24px;
+  background: var(--bg);
+  z-index: 15;
+}
+
+.state h2 {
+  margin: 0;
+  font-size: var(--fs-md);
+  max-width: var(--measure);
+}
+
+.state p {
+  margin: 0;
+  max-width: var(--measure);
+  color: var(--text-dim);
+  line-height: 1.55;
+}
+
+.state code {
+  font-family: var(--mono);
+  font-size: var(--fs-xs);
+  background: var(--bg-elev);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 1px 5px;
+}
+
+.spinner {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid var(--line);
+  border-top-color: var(--accent);
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

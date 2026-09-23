@@ -1,0 +1,21 @@
+/**
+ * NLT Gallery Viewer — Stylesheet entrypoint.
+ *
+ * Decomposed into modular stylesheets under ./styles/:
+ *   - tokens.css: Design tokens, dark theme, typography, reset, focus
+ *   - topbar.css: Header, brand, tabs, search bar, filter dropdowns
+ *   - grid.css: Virtual scroller layout, cards, video tiles, badges
+ *   - states.css: Loading spinner, empty state views
+ *   - modal.css: Modal dialog overlay, header, stage, theater layout
+ *   - player.css: Custom video player overlay, transport controls, chips, part rail
+ *   - statusbar.css: Status bar, keyboard hints, responsive breakpoints
+ */
+
+@import './styles/tokens.css';
+@import './styles/topbar.css';
+@import './styles/grid.css';
+@import './styles/states.css';
+@import './styles/modal.css';
+@import './styles/folders.css';
+@import './styles/player.css';
+@import './styles/statusbar.css';

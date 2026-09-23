@@ -1,0 +1,45 @@
+/**
+ * DOM element references cache.
+ */
+
+export const $ = (id) => document.getElementById(id);
+
+export function getDom() {
+  return {
+    tabs: $('tabs'),
+    search: $('search'),
+    searchWrap: document.querySelector('.search'),
+    searchClear: $('searchClear'),
+    prefix: $('prefix'),
+    rating: $('rating'),
+    character: $('character'),
+    scene: $('scene'),
+    characterRibbon: $('characterRibbon'),
+    resultCount: $('resultCount'),
+    reload: $('btnReload'),
+    viewport: $('gridViewport'),
+    sizer: $('gridSizer'),
+    window: $('gridWindow'),
+    stateLoading: $('stateLoading'),
+    stateEmpty: $('stateEmpty'),
+    emptyTitle: $('emptyTitle'),
+    emptyBody: $('emptyBody'),
+    emptyReload: $('btnEmptyReload'),
+    status: $('status'),
+    modal: $('modal'),
+    modalVideo: $('modalVideo'),
+    modalTitle: $('modalTitle'),
+    modalSub: $('modalSub'),
+    modalPos: $('modalPos'),
+    btnBack: $('btnBack'),
+    btnClose: $('btnClose'),
+    btnPrev: $('btnPrev'),
+    btnNext: $('btnNext'),
+    btnQuality: $('btnQuality'),
+    btnReveal: $('btnReveal'),
+    btnClearFilters: $('btnClearFilters'),
+    countNadia: $('count-nadia'),
+    countGenesis: $('count-genesis'),
+    countSymphony: $('count-symphony'),
+  };
+}

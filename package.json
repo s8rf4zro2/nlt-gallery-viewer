@@ -1,0 +1,76 @@
+{
+  "name": "nlt-gallery-viewer",
+  "version": "0.1.0",
+  "private": true,
+  "description": "High-performance Electron gallery viewer for NLT RPG Maker games with custom streaming protocol, virtualized grid, and dialogue synchronization",
+  "license": "MIT",
+  "author": "s8rf4zro2",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/s8rf4zro2/nlt-gallery-viewer.git"
+  },
+  "keywords": [
+    "electron",
+    "bun",
+    "gallery-viewer",
+    "video-player",
+    "rpgmaker",
+    "mv",
+    "mz",
+    "streaming-protocol",
+    "virtualized-grid"
+  ],
+  "main": "main.js",
+  "type": "module",
+  "packageManager": "bun@1.4.2",
+  "engines": {
+    "bun": "1.4.2"
+  },
+  "scripts": {
+    "scan": "bun run src/main/scanner.js",
+    "start": "electron .",
+    "test": "bun test",
+    "build:portable": "electron-builder --win portable --publish never",
+    "build:dir": "electron-builder --win dir --publish never",
+    "dist": "electron-builder --win portable --publish never"
+  },
+  "build": {
+    "appId": "com.nlt.galleryviewer",
+    "productName": "NLT Gallery Viewer",
+    "copyright": "Copyright © 2026",
+    "publish": null,
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "portable": {
+      "artifactName": "${productName}-Portable-${version}.${ext}"
+    },
+    "files": [
+      "main.js",
+      "preload.cjs",
+      "src/**/*",
+      "renderer/**/*",
+      "!**/*.test.*",
+      "!tests/**/*",
+      "!scratch/**/*",
+      "!docs/**/*",
+      "!.git/**/*",
+      "!**/*.map"
+    ]
+  },
+  "devDependencies": {
+    "@types/bun": "^1.4.2",
+    "electron": "^44.4.3",
+    "electron-builder": "^26.15.3"
+  }
+}

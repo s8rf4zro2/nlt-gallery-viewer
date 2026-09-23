@@ -1,0 +1,152 @@
+/* ------------------------------------------------------------------ modal */
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: 22px;
+}
+
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(4, 5, 8, 0.78);
+  backdrop-filter: blur(6px);
+}
+
+.modal-panel {
+  position: relative;
+  width: min(1240px, 100%);
+  height: min(860px, 100%);
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-elev);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+  animation: pop 0.16s ease-out;
+}
+
+/* theater: near-fullscreen panel, single-row header, overlay transport */
+.modal-theater {
+  width: min(96vw, 1600px);
+  height: min(94vh, 1000px);
+}
+
+.modal-theater .modal-head-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+}
+
+.modal-theater .modal-head-row .modal-heading {
+  flex: 1 1 auto;
+  min-width: 0;
+  grid-row: auto;
+  grid-column: auto;
+}
+
+.modal-theater .modal-head-row > .btn {
+  grid-row: auto;
+  grid-column: auto;
+}
+
+.modal-theater .modal-head-row .modal-tools {
+  grid-row: auto;
+  grid-column: auto;
+}
+
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: scale(0.985) translateY(6px);
+  }
+}
+
+/* header: tools on the top line, scene title oversized underneath */
+.modal-head {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 8px 16px;
+  padding: 12px 16px 14px;
+  border-bottom: 1px solid var(--line);
+  background: var(--bg-soft);
+}
+
+.modal-heading {
+  grid-row: 2;
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+
+/* direct child of the header, so it needs an explicit slot */
+.modal-head > .btn {
+  grid-row: 1;
+  grid-column: 1;
+  justify-self: start;
+}
+
+.modal-title {
+  margin: 0;
+  font-size: var(--fs-lg);
+  font-weight: 650;
+  line-height: 1.15;
+  letter-spacing: -0.2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.modal-sub {
+  margin: 4px 0 0;
+  font-family: var(--mono);
+  font-size: var(--fs-xs);
+  color: var(--text-faint);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.modal-tools {
+  grid-row: 1;
+  grid-column: 2;
+  justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.modal-tools .btn.is-on {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.modal-pos {
+  font-family: var(--mono);
+  font-size: var(--fs-xs);
+  color: var(--text-dim);
+  min-width: 86px;
+  text-align: center;
+}
+
+/* stage: video fills the pane, the transport/chips/rail chrome sits under it */
+.modal-stage {
+  flex: 1 1 auto;
+  min-height: 0;
+  background: #05060a;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-stage video {
+  width: 100%;
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: 100%;
+  object-fit: contain;
+  background: #05060a;
+}
