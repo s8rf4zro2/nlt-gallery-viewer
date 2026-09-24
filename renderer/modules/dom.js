@@ -1,7 +1,3 @@
-/**
- * DOM element references cache.
- */
-
 export const $ = (id) => document.getElementById(id);
 
 export function getDom() {

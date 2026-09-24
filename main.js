@@ -1,7 +1,3 @@
-/**
- * NLT Gallery Viewer — Electron main process.
- */
-
 import { app, BrowserWindow, nativeTheme } from 'electron';
 import { registerIpc } from './src/main/ipc.js';
 import { registerMediaSchemes, registerMediaProtocol } from './src/main/protocol.js';

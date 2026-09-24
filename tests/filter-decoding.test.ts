@@ -13,6 +13,11 @@ import {
   isBogusSceneTitle,
   PS_SCENES,
   isNSFWEntry,
+  isHeroineCode,
+  HEROINE_2LETTER_CODES,
+  hasMultiCharacterCode,
+  isSFWStoryStem,
+  GAME_SFW_REGISTRY,
 } from "../src/shared/decoder/index.js";
 import { sceneGroupFromStem } from "../src/main/scanner.js";
 
@@ -775,8 +780,21 @@ describe("NSFW and SFW cutscene classification and filtering", () => {
     expect(isNSFWEntry({ name: "KePD1", title: "Kelli Pile Driver" })).toBe(true);
     expect(isNSFWEntry({ name: "HeWorkout", title: "Heather Workout" })).toBe(true);
     expect(isNSFWEntry({ name: "ErInt", title: "Erica Interrogation" })).toBe(true);
-    expect(isNSFWEntry({ name: "Toma-RightArmB", title: "Toma Leolo Cum" })).toBe(true);
+    expect(isNSFWEntry({ name: "HnChWtf1", title: "Hannah Chloe" })).toBe(true);
     expect(isNSFWEntry({ name: "DemoTeaser", title: "Empusa" })).toBe(true);
+    // Two-character code scenes and erotic dining / vault scenes classified as NSFW
+    expect(isNSFWEntry({ name: "AdMeMcMeet1", title: "Andrea Melissa Dining", characters: ["Andrea", "Melissa"] })).toBe(true);
+    expect(isNSFWEntry({ name: "LiErDnr1", title: "Lillian Erica Dinner", characters: ["Erica", "Lillian"] })).toBe(true);
+    expect(isNSFWEntry({ name: "AgLoVlt1", title: "Agrat Lola Vault", characters: ["Agrat", "Lola"] })).toBe(true);
+    expect(isNSFWEntry({ name: "AtCpPalace1", title: "Athena Cleo Meet", characters: ["Athena", "Cleopatra"] })).toBe(true);
+    expect(isNSFWEntry({ name: "LiDnRmFk1", title: "Lillian Dining Solo", scene: "Dining Solo" })).toBe(true);
+    expect(isNSFWEntry({ name: "ErTmbRd1", title: "Erica Tomb", scene: "Erica Tomb" })).toBe(true);
+    expect(isNSFWEntry({ name: "AtAgLeFght1", title: "Athena Agrat Fight", characters: ["Agrat", "Athena"] })).toBe(true);
+    // Genesis edge cases: Hannah Meet and Nellie Fight MC are NSFW
+    expect(isNSFWEntry({ name: "HaIntro1", title: "Hannah Meet" })).toBe(true);
+    expect(isNSFWEntry({ name: "NeMcFgt1", title: "Nellie Fights MC" })).toBe(true);
+    // Symphony Apex Fight is NSFW
+    expect(isNSFWEntry({ name: "AtGoArEmApex1", title: "Apex Fight" })).toBe(true);
   });
 
   test("isNSFWEntry correctly classifies story and non-sexual scenes as SFW", () => {
@@ -791,6 +809,22 @@ describe("NSFW and SFW cutscene classification and filtering", () => {
     expect(isNSFWEntry({ name: "Fig-Alia-Outfit", title: "Alia · Showcase Outfit", category: "Figurine / Showcase" })).toBe(false);
     expect(isNSFWEntry({ name: "Fig-Alia", title: "Alia · Showcase", category: "Figurine / Showcase" })).toBe(false);
     expect(isNSFWEntry({ name: "BookThrow", title: "Book Throw" })).toBe(false);
+    // Verified single-character combat and story scenes correctly classified as SFW
+    expect(isNSFWEntry({ name: "BgFght1", title: "Duncan Fight" })).toBe(false);
+    expect(isNSFWEntry({ name: "Dinner3_1", title: "Dinner" })).toBe(false);
+    expect(isNSFWEntry({ name: "AmNews", title: "Amiras News Broadcast" })).toBe(false);
+    expect(isNSFWEntry({ name: "BrRead1", title: "Brian reading" })).toBe(false);
+    expect(isNSFWEntry({ name: "Breakfast", title: "Breakfast" })).toBe(false);
+    // Genesis Toma stone artifact cutscenes are SFW (including Leolo, Erica, and Lillian stone parts)
+    expect(isNSFWEntry({ name: "Toma-RightArm", title: "Toma Stone Arm" })).toBe(false);
+    expect(isNSFWEntry({ name: "Toma-RightArmB", title: "Toma Stone Arm (Leolo)" })).toBe(false);
+    expect(isNSFWEntry({ name: "Toma-RightArmC", title: "Toma Stone Arm (Erica)" })).toBe(false);
+    expect(isNSFWEntry({ name: "Toma-RightHead", title: "Toma Stone Head" })).toBe(false);
+    expect(isNSFWEntry({ name: "Toma-RightLeg", title: "Toma Stone Leg" })).toBe(false);
+    expect(isNSFWEntry({ name: "Toma-RightLegB", title: "Toma Stone Leg (Lillian)" })).toBe(false);
+    // Genesis investigation cutscenes are SFW
+    expect(isNSFWEntry({ name: "NoMcInt", title: "Nellie Interrogation" })).toBe(false);
+    expect(isNSFWEntry({ name: "Research1", title: "Research" })).toBe(false);
   });
 
   test("decodeEntry includes nsfw flag and rating tag", () => {
@@ -876,5 +910,102 @@ describe("NSFW and SFW cutscene classification and filtering", () => {
     expect(isNSFWEntry(customEntry)).toBe(true);
   });
 });
+
+describe("Domain-driven rating architecture and heroine code resolution", () => {
+  test("HEROINE_2LETTER_CODES and isHeroineCode accurately identifies heroine aliases", () => {
+    // Canonical heroine codes across games
+    expect(isHeroineCode("ad")).toBe(true); // Andrea (Genesis)
+    expect(isHeroineCode("er")).toBe(true); // Erica (Genesis)
+    expect(isHeroineCode("li")).toBe(true); // Lillian (Genesis)
+    expect(isHeroineCode("me")).toBe(true); // Melissa (Genesis)
+    expect(isHeroineCode("ag")).toBe(true); // Agrat (Symphony)
+    expect(isHeroineCode("at")).toBe(true); // Athena (Symphony)
+    expect(isHeroineCode("cp")).toBe(true); // Cleopatra (Symphony)
+    expect(isHeroineCode("al")).toBe(true); // Alia (Nadia)
+    expect(isHeroineCode("pr")).toBe(true); // Pricia (Nadia)
+    expect(isHeroineCode("ta")).toBe(true); // Tasha (Nadia)
+
+    // Rejects non-heroine codes
+    expect(isHeroineCode("wi")).toBe(false); // William (male character)
+    expect(isHeroineCode("an")).toBe(false); // act abbreviation (Anal)
+    expect(isHeroineCode("bj")).toBe(false); // act abbreviation (Blowjob)
+    expect(isHeroineCode("ff")).toBe(false); // act abbreviation (First Fuck)
+    expect(isHeroineCode("dp")).toBe(false); // act abbreviation
+    expect(isHeroineCode("xx")).toBe(false);
+    expect(isHeroineCode("toma")).toBe(false); // Not 2 letters
+
+    // Game scoping
+    expect(isHeroineCode("cp", "symphony")).toBe(true); // Cleopatra in Symphony
+    expect(isHeroineCode("cp", "nadia")).toBe(false); // Cleopatra not in Nadia
+  });
+
+  test("hasMultiCharacterCode detects multi-heroine encounters and avoids single-heroine act false positives", () => {
+    // Multi-heroine PascalCase prefixes
+    expect(hasMultiCharacterCode("AdMeMcMeet1")).toBe(true); // Andrea & Melissa
+    expect(hasMultiCharacterCode("LiErDnr1")).toBe(true); // Lillian & Erica
+    expect(hasMultiCharacterCode("AgLoVlt1")).toBe(true); // Agrat & Lola
+    expect(hasMultiCharacterCode("AtCpPalace1")).toBe(true); // Athena & Cleopatra
+    expect(hasMultiCharacterCode("AlEmTS1")).toBe(true); // Alia & Emily
+
+    // Protagonist multi-heroine sandwiches
+    expect(hasMultiCharacterCode("AdMcArPf")).toBe(true);
+    expect(hasMultiCharacterCode("ChHnMcEO1")).toBe(true);
+
+    // Orgy / group indicators
+    expect(hasMultiCharacterCode("ArLiJuNeErEl7sm")).toBe(true);
+    expect(hasMultiCharacterCode("Blnd4Sm1")).toBe(true);
+    expect(hasMultiCharacterCode("BigOrgy1")).toBe(true);
+    expect(hasMultiCharacterCode("BC-3sNaPr12")).toBe(true);
+
+    // Single heroine + act abbreviation stems should NOT be flagged as multi-heroine
+    expect(hasMultiCharacterCode("EmAn1")).toBe(false); // Emily + Anal
+    expect(hasMultiCharacterCode("MlAn1")).toBe(false); // Madalyn + Anal
+    expect(hasMultiCharacterCode("SoAn1")).toBe(false); // Sofia + Anal
+    expect(hasMultiCharacterCode("DiAn1")).toBe(false); // Divya + Anal
+    expect(hasMultiCharacterCode("LuAn1")).toBe(false); // Lucy + Anal
+  });
+
+  test("GAME_SFW_REGISTRY and isSFWStoryStem strictly isolates game story domains", () => {
+    // Nadia story cutscenes
+    expect(isSFWStoryStem("canoe", "nadia")).toBe(true);
+    expect(isSFWStoryStem("funeral", "nadia")).toBe(true);
+    expect(isSFWStoryStem("lunchparty", "nadia")).toBe(true);
+    expect(isSFWStoryStem("dinner3_1", "nadia")).toBe(true);
+    expect(isSFWStoryStem("bgfght1", "nadia")).toBe(true);
+    expect(isSFWStoryStem("meetemily", "nadia")).toBe(true);
+
+    // Genesis story cutscenes
+    expect(isSFWStoryStem("amuleth", "genesis")).toBe(true);
+    expect(isSFWStoryStem("dinner", "genesis")).toBe(true);
+    expect(isSFWStoryStem("nomcint", "genesis")).toBe(true);
+    expect(isSFWStoryStem("research1", "genesis")).toBe(true);
+    expect(isSFWStoryStem("toma-rightarm", "genesis")).toBe(true);
+    expect(isSFWStoryStem("didufght1", "genesis")).toBe(true);
+
+    // Symphony story cutscenes
+    expect(isSFWStoryStem("amnews", "symphony")).toBe(true);
+    expect(isSFWStoryStem("breakfast", "symphony")).toBe(true);
+    expect(isSFWStoryStem("cleotomb", "symphony")).toBe(true);
+    expect(isSFWStoryStem("crmcfight", "symphony")).toBe(true);
+    expect(isSFWStoryStem("shootout", "symphony")).toBe(true);
+    expect(isSFWStoryStem("tennis", "symphony")).toBe(true);
+
+    // Verified adult edge cases are NOT in the SFW registry
+    expect(isSFWStoryStem("haintro1", "genesis")).toBe(false); // Hannah Meet is NSFW
+    expect(isSFWStoryStem("nemcfgt1", "genesis")).toBe(false); // Nellie Fight MC is NSFW
+    expect(isSFWStoryStem("atgoaremapex1", "symphony")).toBe(false); // Apex fight is NSFW
+    expect(isSFWStoryStem("admcdnr", "genesis")).toBe(false); // Multi-heroine dinner is NSFW
+  });
+
+  test("Toma is not recognized as a heroine character", () => {
+    expect(CHARACTERS_BY_GAME.genesis).not.toContain("Toma");
+    const decodedStone = decodeEntry({ name: "Toma-RightArm" }, "genesis");
+    expect(decodedStone.characters).toEqual([]);
+    expect(decodedStone.character).toBe("Various");
+    expect(decodedStone.scene).toBe("Toma Stone Arm");
+    expect(decodedStone.nsfw).toBe(false);
+  });
+});
+
 
 

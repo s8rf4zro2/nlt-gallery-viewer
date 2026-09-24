@@ -25,7 +25,6 @@ export function registerMediaSchemes() {
   ]);
 }
 
-/** URL shape the protocol handler parses: `nlt-media://local/<encoded abs path>`. */
 export function isWithin(child, parent) {
   const relative = path.relative(parent, child);
   return relative !== '' && !relative.startsWith('..') && !path.isAbsolute(relative);

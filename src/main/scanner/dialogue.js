@@ -1,7 +1,3 @@
-/**
- * RPG Maker game event parsing, dialogue extraction, and speaker resolution.
- */
-
 import fsp from 'node:fs/promises';
 import path from 'node:path';
 import { parseMapFilesBatch } from './map-parser.js';
@@ -280,7 +276,6 @@ export async function extractGameDialogue(game, gameDir, moviesDir, { onProgress
     }
   }
 
-  // Scan map files for choice titles in concurrent batches
   try {
     const dirEntries = await fsp.readdir(dataDir);
     const mapFiles = dirEntries.filter((f) => /^Map\d+\.json$/i.test(f));

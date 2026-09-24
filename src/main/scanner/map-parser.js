@@ -1,20 +1,7 @@
-/**
- * Map parser for RPG Maker Map*.json files.
- *
- * Scans map event pages for choice titles (code 102) and video playback commands
- * (codes 355, 655, 357) to associate cutscenes with in-game decision titles.
- */
-
 import fsp from 'node:fs/promises';
 import path from 'node:path';
 import { BOGUS_TITLES } from './dialogue.js';
 
-/**
- * Parse a single RPG Maker Map*.json file and extract video-to-title associations.
- *
- * @param {string} filePath Absolute path to the Map file.
- * @returns {Promise<Array<{ vid: string, title: string }>>}
- */
 export async function parseMapFile(filePath) {
   try {
     const text = await fsp.readFile(filePath, 'utf8');
@@ -31,7 +18,6 @@ export async function parseMapFile(filePath) {
         for (const cmd of page.list) {
           if (!cmd) continue;
 
-          // Choice menu command
           if (cmd.code === 102) {
             const choices = cmd.parameters?.[0];
             if (Array.isArray(choices) && choices.length > 0) {
@@ -49,7 +35,6 @@ export async function parseMapFile(filePath) {
             }
           }
 
-          // Video playback commands
           let vid = null;
           if (cmd.code === 355 || cmd.code === 655) {
             const script = cmd.parameters?.[0] || '';
@@ -72,16 +57,6 @@ export async function parseMapFile(filePath) {
   }
 }
 
-/**
- * Parse an array of map files in concurrent chunks, reporting progress.
- *
- * @param {string} dataDir Directory containing Map*.json files.
- * @param {string[]} mapFiles Array of map filenames (e.g. ['Map001.json', ...]).
- * @param {object} [options]
- * @param {number} [options.batchSize=16] Concurrency level for file reads.
- * @param {function} [options.onProgress] Optional progress callback.
- * @returns {Promise<Record<string, string[]>>} Map of vid -> titles array.
- */
 export async function parseMapFilesBatch(dataDir, mapFiles, { batchSize = 16, onProgress } = {}) {
   const titlesByVid = {};
   const total = mapFiles.length;

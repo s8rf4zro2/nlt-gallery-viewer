@@ -1,7 +1,3 @@
-/**
- * Video file extensions and character / scene aliases for scanner.
- */
-
 export const VIDEO_EXTENSIONS = ['.mp4', '.webm'];
 
 export const CHARACTER_ALIASES = {

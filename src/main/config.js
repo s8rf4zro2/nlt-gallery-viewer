@@ -17,7 +17,6 @@ if (PORTABLE_DIR && app?.setPath) {
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-/** Project root when running from source or packaged. */
 export const PROJECT_ROOT = app?.isPackaged ? app.getAppPath() : path.resolve(__dirname, '..', '..');
 
 /**

@@ -1,7 +1,3 @@
-/**
- * Variant chips definition for scene player.
- */
-
 export const CHIPS = [
   { id: 'all', match: () => true },
   { id: 'O1', match: (part) => part.variant === 'O1' || part.variant === '' },

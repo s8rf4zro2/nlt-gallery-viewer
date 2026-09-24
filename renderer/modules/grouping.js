@@ -1,9 +1,6 @@
 import { num, toPath } from './format.js';
 import { isNSFWEntry } from '../../src/shared/decoder/index.js';
 
-/**
- * Trust the scanner's fields verbatim: reshapes paths/sizes and normalizes entry.
- */
 export function normalizeEntry(raw, gameId) {
   const name = String(raw?.name ?? '').trim();
   const rawChars = Array.isArray(raw?.characters)
@@ -37,9 +34,6 @@ export function normalizeEntry(raw, gameId) {
   };
 }
 
-/**
- * Relative order for variant/outfit sequences: Outfit 1 -> Outfit 2 -> NP -> fast -> other.
- */
 export function variantRank(variant) {
   if (!variant || variant === 'O1') return 1;
   if (variant === 'O2') return 2;
@@ -50,11 +44,6 @@ export function variantRank(variant) {
   return 50;
 }
 
-/**
- * Fold entries into scenes: one card per scene, parts ordered cleanly
- * per variant/outfit sequence without interlacing (Variant -> Part -> Alternate).
- * The scene's display fields come from its first part.
- */
 export function groupEntries(entries) {
   const map = new Map(); // game + sceneId -> scene
   for (const m of entries) {
@@ -99,7 +88,6 @@ export function groupEntries(entries) {
       }
     }
 
-    // Sort parts: Variant/Outfit first, then Part number, then Alternate, then Name
     s.parts.sort((a, b) => {
       const vDiff = variantRank(a.variant) - variantRank(b.variant);
       if (vDiff !== 0) return vDiff;
@@ -134,7 +122,6 @@ export function groupEntries(entries) {
   return [...map.values()];
 }
 
-/** Distinct scene count of an entry list. */
 export function countScenes(entries) {
   const keys = new Set();
   for (const m of entries) {

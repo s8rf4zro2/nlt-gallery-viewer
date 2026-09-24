@@ -1,13 +1,8 @@
-/**
- * Act dictionaries, category maps, and scene definitions.
- */
-
 /** Common act abbreviations that should never be mistaken for a second character in stems */
 export const ACT_ABBREVS = new Set([
   'an', 'ap', 'as', 'cp', 'bj', 'hj', 'fj', 'dp', 'fk', 'dt', 'cg', 'sn', 'ff', 'cs', 'mc', 'ts', 'ms', 'pf', 'tf', 'ss', 'bp', 'eo', 'sh', 'sk'
 ]);
 
-/** Act codes and abbreviations mapped to human-readable names */
 export const ACT_DICTIONARY = {
   // Anal & Penetration
   as: 'Anal Sex',
@@ -202,7 +197,6 @@ export const PS_SCENES = {
   sk: { scene: 'Sofia & Kaley', characters: ['Sofia', 'Kaley'], act: 'Threesome' },
 };
 
-/** Set of canonical act names to differentiate acts from story scenes */
 export const CANONICAL_ACT_NAMES = new Set([
   'Anal Play', 'Anal Sex', 'Blowjob', 'Breeding Press', 'Cock Play', 'Couch Sex',
   'Cowgirl', 'Creampie', 'Creampie Snack', 'Deep Throat', 'Domination', 'Double Penetration',
@@ -217,7 +211,6 @@ export const CANONICAL_ACT_NAMES = new Set([
   'Chair Sex', 'Squat Sex', 'Trick Sex',
 ]);
 
-/** Category mappings from stem prefix */
 export const CATEGORY_MAP = {
   bc: 'Booty Call',
   ps: 'Porn Shop',

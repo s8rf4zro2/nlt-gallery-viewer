@@ -1,7 +1,3 @@
-/**
- * Game folder configuration and setup modal controller.
- */
-
 const SUPPORTED_GAMES = ['nadia', 'genesis', 'symphony'];
 
 export class FoldersModalController {
@@ -124,12 +120,10 @@ export class FoldersModalController {
       }
     }
 
-    // Save button enabled if at least one valid game
     if (el.btnSave) {
       el.btnSave.disabled = !this.hasValidGames() || this.scanning;
     }
 
-    // Cancel / Close buttons disabled if force setup and no valid games
     if (el.btnClose) el.btnClose.hidden = this.forceSetup && !this.hasValidGames();
     if (el.btnCancel) el.btnCancel.hidden = this.forceSetup && !this.hasValidGames();
   }
@@ -183,7 +177,6 @@ export class FoldersModalController {
       }
     }
 
-    // If single game was selected instead of parent
     if (!foundAny && detected?.single && detected.single.count > 0) {
       const lower = folder.toLowerCase();
       const targetKey = (lower.includes('symphony') || lower.includes('serpent'))

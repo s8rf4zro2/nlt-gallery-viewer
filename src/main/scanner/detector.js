@@ -1,7 +1,3 @@
-/**
- * Game directories and movie folders detector.
- */
-
 import fsp from 'node:fs/promises';
 import path from 'node:path';
 import { VIDEO_EXTENSIONS } from './constants.js';

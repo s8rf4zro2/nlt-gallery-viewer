@@ -1,10 +1,5 @@
-/**
- * Canonical characters and alias mappings across supported NLT games.
- */
-
 export const PLACEHOLDERS = new Set(['various', 'misc', 'unknown', 'none', '']);
 
-/** Canonical character names per game */
 export const CHARACTERS_BY_GAME = {
   nadia: [
     'Alia', 'Clare', 'Diana', 'Emily', 'Evie', 'Janet', 'Jessica',
@@ -13,7 +8,7 @@ export const CHARACTERS_BY_GAME = {
   genesis: [
     'Andrea', 'Arianna', 'Carol', 'Casandra', 'Chloe', 'Debra', 'Diana',
     'Ella', 'Erica', 'Hannah', 'Heather', 'Judy', 'Kimberly', 'Lillian',
-    'Lisa', 'Madalyn', 'Melissa', 'Nellie', 'Oracle', 'Tara', 'Toma',
+    'Lisa', 'Madalyn', 'Melissa', 'Nellie', 'Oracle', 'Tara',
     'Alia', 'Amber', 'Bancroft', 'Clare', 'Evie', 'Janet', 'Jessica',
     'Kaley', 'Katherine', 'Naomi', 'Sofia', 'Valerie', 'William',
   ],
@@ -25,7 +20,6 @@ export const CHARACTERS_BY_GAME = {
   ],
 };
 
-/** Valid characters recognized per game (including cameos & crossovers) */
 export const GAME_VALID_CHARACTERS = {
   nadia: new Set([
     'Alia', 'Clare', 'Diana', 'Emily', 'Evie', 'Janet', 'Jessica',
@@ -35,7 +29,7 @@ export const GAME_VALID_CHARACTERS = {
   genesis: new Set([
     'Andrea', 'Arianna', 'Carol', 'Casandra', 'Chloe', 'Debra', 'Diana',
     'Ella', 'Erica', 'Hannah', 'Heather', 'Judy', 'Kimberly', 'Lillian',
-    'Lisa', 'Madalyn', 'Melissa', 'Nellie', 'Oracle', 'Tara', 'Toma',
+    'Lisa', 'Madalyn', 'Melissa', 'Nellie', 'Oracle', 'Tara',
     'Alia', 'Amber', 'Bancroft', 'Clare', 'Evie', 'Janet', 'Jessica',
     'Kaley', 'Katherine', 'Naomi', 'Sofia', 'Valerie', 'William',
   ]),
@@ -47,7 +41,6 @@ export const GAME_VALID_CHARACTERS = {
   ]),
 };
 
-/** Game-scoped character aliases to prevent cross-game namespace pollution */
 export const GAME_CHARACTER_ALIASES = {
   nadia: {
     al: 'Alia', alia: 'Alia',
@@ -88,7 +81,6 @@ export const GAME_CHARACTER_ALIASES = {
     ne: 'Nellie', nellie: 'Nellie', no: 'Nellie',
     oracle: 'Oracle',
     tara: 'Tara',
-    toma: 'Toma',
     wi: 'William', william: 'William',
     al: 'Alia', alia: 'Alia',
     amber: 'Amber',
@@ -135,9 +127,7 @@ export const GAME_CHARACTER_ALIASES = {
   },
 };
 
-/** Global fallback character aliases & stem prefixes mapped to canonical names */
 export const CHARACTER_ALIASES = {
-  // Nadia & Genesis shared / specific
   al: 'Alia', alia: 'Alia',
   cl: 'Clare', cr: 'Clare', clare: 'Clare',
   di: 'Diana', diana: 'Diana',
@@ -171,10 +161,8 @@ export const CHARACTER_ALIASES = {
   deb: 'Debra', debra: 'Debra',
   lisa: 'Lisa',
   oracle: 'Oracle',
-  toma: 'Toma',
   wi: 'William', william: 'William',
   banc: 'Bancroft', bancroft: 'Bancroft',
-  // Symphony specific
   ag: 'Agrat', agrat: 'Agrat',
   am: 'Amira', amira: 'Amira',
   ay: 'Anya', anya: 'Anya',
@@ -197,7 +185,6 @@ export const CHARACTER_ALIASES = {
   ol: 'Olivia', olivia: 'Olivia',
 };
 
-/** Game-specific character code overrides */
 export const GAME_SPECIFIC_CHARACTERS = {
   symphony: {
     ju: 'Julia',
@@ -241,3 +228,22 @@ export const GAME_SPECIFIC_CHARACTERS = {
     no: 'Nellie',
   },
 };
+
+export const HEROINE_2LETTER_CODES = new Set(
+  Object.values(GAME_CHARACTER_ALIASES).flatMap((gameDict) =>
+    Object.entries(gameDict)
+      .filter(([alias, canonical]) => alias.length === 2 && canonical !== 'William')
+      .map(([alias]) => alias.toLowerCase())
+  )
+);
+
+export function isHeroineCode(code, game = '') {
+  if (!code) return false;
+  const lower = String(code).toLowerCase();
+  if (lower.length !== 2) return false;
+  if (game && GAME_CHARACTER_ALIASES[game]) {
+    const canonical = GAME_CHARACTER_ALIASES[game][lower];
+    return Boolean(canonical && canonical !== 'William');
+  }
+  return HEROINE_2LETTER_CODES.has(lower);
+}

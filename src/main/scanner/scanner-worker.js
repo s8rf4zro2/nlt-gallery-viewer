@@ -1,11 +1,3 @@
-/**
- * Scanner & Map Parser Worker.
- *
- * Runs inside a dedicated Node.js worker_thread in Electron or CLI runtime.
- * Offloads all file listing, stat operations, JSON map parsing,
- * dialogue extraction, pairing, and index writing completely off the main thread.
- */
-
 import { parentPort } from 'node:worker_threads';
 import { scanGame, scanAll } from './orchestrator.js';
 import { parseMapFilesBatch, parseMapFile } from './map-parser.js';

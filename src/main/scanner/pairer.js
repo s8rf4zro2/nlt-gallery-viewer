@@ -1,7 +1,3 @@
-/**
- * Pair low and high quality video candidates into consolidated entries.
- */
-
 import { decodeEntry } from '../../shared/decoder/index.js';
 import {
   characterFromStem,

@@ -124,7 +124,6 @@ export class VirtualGrid {
     }
     this.renderState = { first, last };
 
-    // Recycle tiles that scrolled out of the window
     for (const [index, node] of [...this.tilePool.tiles]) {
       if (index < first || index > last) {
         this.tilePool.tiles.delete(index);

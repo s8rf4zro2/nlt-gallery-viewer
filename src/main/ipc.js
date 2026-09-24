@@ -68,21 +68,28 @@ export function registerIpc() {
   ipcMain.handle('nlt:games:saveAndScan', async (_event, gamesConfig) => {
     const current = await getRootsConfig();
     const updatedGames = { ...current.games };
-    const scanResults = [];
 
+    for (const [gameKey, paths] of Object.entries(gamesConfig || {})) {
+      if (!paths || !paths.moviesDir) continue;
+      updatedGames[gameKey] = {
+        gameDir: paths.gameDir || paths.moviesDir,
+        moviesDir: paths.moviesDir,
+      };
+    }
+
+    // Persist roots and update in-memory allow-list IMMEDIATELY
+    // so streaming media never hits 403 Forbidden in protocol handler
+    await saveRootsConfig({ roots: current.roots, games: updatedGames });
+
+    const scanResults = [];
     try {
-      for (const [gameKey, paths] of Object.entries(gamesConfig || {})) {
+      for (const [gameKey, paths] of Object.entries(updatedGames)) {
         if (!paths || !paths.moviesDir) continue;
-        const gameDir = paths.gameDir || paths.moviesDir;
-        updatedGames[gameKey] = {
-          gameDir,
-          moviesDir: paths.moviesDir,
-        };
         const outPath = path.join(CACHE_DIR, `index-${gameKey}.json`);
         const res = await scanGameWithWorker({
           game: gameKey,
           dir: paths.moviesDir,
-          gameDir,
+          gameDir: paths.gameDir || paths.moviesDir,
           out: outPath,
           onProgress: (prog) => {
             try {
@@ -93,7 +100,6 @@ export function registerIpc() {
         scanResults.push(res);
       }
 
-      await saveRootsConfig({ roots: current.roots, games: updatedGames });
       return { success: true, results: scanResults };
     } finally {
       terminateScannerWorker();

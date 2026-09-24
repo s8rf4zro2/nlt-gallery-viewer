@@ -1,8 +1,3 @@
-/**
- * Scanner module index.
- * Re-exports all submodules for complete backward compatibility.
- */
-
 import fsp from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';

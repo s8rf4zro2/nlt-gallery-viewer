@@ -1,10 +1,3 @@
-/**
- * Worker client bridge for game scanning and map parsing.
- *
- * Spawns and communicates with the background worker_thread.
- * Provides fallback to current thread if worker threads are unavailable.
- */
-
 import { Worker } from 'node:worker_threads';
 import { scanGame, scanAll } from './orchestrator.js';
 import { parseMapFilesBatch, parseMapFile } from './map-parser.js';
@@ -41,7 +34,6 @@ function createWorker() {
   });
 
   worker.on('error', (err) => {
-    // Reject all pending tasks on worker error
     for (const [taskId, task] of pendingTasks.entries()) {
       pendingTasks.delete(taskId);
       task.reject(err);
@@ -61,10 +53,6 @@ function createWorker() {
   return activeWorker;
 }
 
-/**
- * Execute an action in the background worker thread.
- * Automatically falls back to in-process execution if workers fail.
- */
 export async function executeInWorker(action, payload = {}, onProgress = null) {
   let worker;
   let taskId;
@@ -94,9 +82,6 @@ export async function executeInWorker(action, payload = {}, onProgress = null) {
   });
 }
 
-/**
- * Direct fallback execution on the calling thread.
- */
 async function executeDirect(action, payload, onProgress) {
   switch (action) {
     case 'scanGame':
@@ -115,9 +100,6 @@ async function executeDirect(action, payload, onProgress) {
   }
 }
 
-/**
- * Terminate the background worker when idle or when cleaning up.
- */
 export function terminateScannerWorker() {
   if (activeWorker) {
     try {
@@ -128,23 +110,14 @@ export function terminateScannerWorker() {
   pendingTasks.clear();
 }
 
-/**
- * Scan a single game using the background worker thread.
- */
 export async function scanGameWithWorker({ game, dir, gameDir, out, onProgress }) {
   return executeInWorker('scanGame', { game, dir, gameDir, out }, onProgress);
 }
 
-/**
- * Scan all configured games using the background worker thread.
- */
 export async function scanAllWithWorker({ onProgress } = {}) {
   return executeInWorker('scanAll', {}, onProgress);
 }
 
-/**
- * Parse an array of map files using the background worker thread.
- */
 export async function parseMapsWithWorker({ dataDir, mapFiles, batchSize, onProgress } = {}) {
   return executeInWorker('parseMaps', { dataDir, mapFiles, batchSize }, onProgress);
 }

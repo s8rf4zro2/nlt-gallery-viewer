@@ -1,17 +1,6 @@
 import { countScenes } from './grouping.js';
 import { isNSFWEntry } from '../../src/shared/decoder/index.js';
 
-/**
- * Filter entries according to active search query, prefix (category), character, scene, and content rating.
- *
- * Supports:
- * - Content rating filter: 'nsfw' (only NSFW scenes), 'sfw' (only SFW scenes), or 'all' / '' (both).
- * - Multi-character matching: an entry/scene matches if the target character is in its characters list.
- * - Category / Prefix matching: checks against `m.category` or `m.prefix`.
- * - Scene / Act matching: checks against `m.scene` or `m.act`.
- * - Multi-word full-text search: all search terms must match somewhere across title, stem name,
- *   characters, scene, act, category, gameScene, and tags.
- */
 export function filterEntries({
   all,
   query = '',
@@ -35,13 +24,12 @@ export function filterEntries({
   const queryTerms = hasQuery ? q.split(/\s+/).filter(Boolean) : [];
 
   return all.filter((m) => {
-    // 0. Rating filter (NSFW vs SFW)
     if (hasRating) {
-      const isNsfw = typeof m.nsfw === 'boolean' ? m.nsfw : isNSFWEntry(m);
+      const isNsfw = typeof m.nsfw === 'boolean' ? m.nsfw : isNSFWEntry(m, m.game);
       if (r === 'nsfw' && !isNsfw) return false;
       if (r === 'sfw' && isNsfw) return false;
     }
-    // 1. Category / Prefix filter
+
     if (hasPrefix) {
       const matchPrefix =
         m.prefix === prefix ||
@@ -51,7 +39,6 @@ export function filterEntries({
       if (!matchPrefix) return false;
     }
 
-    // 2. Character filter (multi-character aware)
     if (hasChar) {
       const chars = Array.isArray(m.characters) && m.characters.length > 0
         ? m.characters
@@ -60,7 +47,6 @@ export function filterEntries({
       if (!matchChar) return false;
     }
 
-    // 3. Scene / Act filter
     if (hasScene) {
       const matchScene =
         m.scene === scene ||
@@ -70,7 +56,6 @@ export function filterEntries({
       if (!matchScene) return false;
     }
 
-    // 4. Query search across all fields
     if (hasQuery) {
       const charTokens = Array.isArray(m.characters)
         ? m.characters.join(' ')
@@ -86,9 +71,6 @@ export function filterEntries({
   });
 }
 
-/**
- * Generate formatted status text for the status bar.
- */
 export function formatStatusText({
   gameLabel,
   allEntries,

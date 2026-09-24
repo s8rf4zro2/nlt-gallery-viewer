@@ -1,7 +1,3 @@
-/**
- * Text formatting, title validation, and scene name cleaners.
- */
-
 /** Bogus choice options from in-game prompts that should never be scene titles */
 export function isBogusSceneTitle(title) {
   if (!title) return true;
@@ -25,9 +21,6 @@ export function isBogusSceneTitle(title) {
   );
 }
 
-/**
- * Split CamelCase / PascalCase and clean up text into title words.
- */
 export function formatCamelWords(text) {
   if (!text) return '';
   return String(text)
@@ -39,9 +32,6 @@ export function formatCamelWords(text) {
     .trim();
 }
 
-/**
- * Clean up a scene name from CommonEvent or game index.
- */
 export function cleanSceneName(rawScene) {
   if (!rawScene) return '';
   let cleaned = String(rawScene).trim();

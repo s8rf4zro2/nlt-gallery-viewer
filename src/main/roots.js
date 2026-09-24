@@ -13,9 +13,6 @@ export function rootsFromEnvironment() {
     .map((entry) => path.resolve(entry));
 }
 
-/**
- * Read the full roots config object from `.cache/roots.json`.
- */
 export async function getRootsConfig() {
   const stat = await statOrNull(ROOTS_FILE);
   if (!stat || !stat.isFile()) {
@@ -45,9 +42,8 @@ export async function getRootsConfig() {
   }
 }
 
-/**
- * Save roots config to `.cache/roots.json` atomically.
- */
+let inMemoryRoots = null;
+
 export async function saveRootsConfig({ roots = [], games = {} } = {}) {
   await fsp.mkdir(CACHE_DIR, { recursive: true });
   const allRoots = new Set(roots);
@@ -56,8 +52,11 @@ export async function saveRootsConfig({ roots = [], games = {} } = {}) {
     if (game.moviesDir) allRoots.add(path.resolve(game.moviesDir));
   }
 
+  // Update in-memory roots cache immediately so protocol handler permits streaming media with zero race
+  inMemoryRoots = [...allRoots];
+
   const payload = {
-    roots: [...allRoots],
+    roots: inMemoryRoots,
     games,
     updatedAt: new Date().toISOString(),
   };
@@ -69,9 +68,22 @@ export async function saveRootsConfig({ roots = [], games = {} } = {}) {
   return payload;
 }
 
+export function addAllowedRoots(newRoots) {
+  if (!Array.isArray(newRoots)) return;
+  if (!inMemoryRoots) inMemoryRoots = rootsFromEnvironment();
+  const set = new Set(inMemoryRoots);
+  for (const r of newRoots) {
+    if (r) set.add(path.resolve(r));
+  }
+  inMemoryRoots = [...set];
+}
+
 /**
  * Read-only roots list consumed by the media allow-list.
  */
 export async function readRoots() {
-  return (await getRootsConfig()).roots;
+  if (inMemoryRoots) return inMemoryRoots;
+  const cfg = await getRootsConfig();
+  inMemoryRoots = cfg.roots;
+  return inMemoryRoots;
 }

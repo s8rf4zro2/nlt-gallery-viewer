@@ -1,7 +1,3 @@
-/**
- * Global gallery constants and sizing geometry.
- */
-
 export const GAMES = [
   { id: 'nadia', label: 'Nadia', index: 'index-nadia.json' },
   { id: 'genesis', label: 'Genesis', index: 'index-genesis.json' },

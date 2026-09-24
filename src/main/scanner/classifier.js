@@ -1,7 +1,3 @@
-/**
- * Natural sort and video file classification.
- */
-
 import fsp from 'node:fs/promises';
 import { VIDEO_EXTENSIONS } from './constants.js';
 import { stripLiteSuffix } from './stem.js';

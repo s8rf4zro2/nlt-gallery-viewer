@@ -1,7 +1,3 @@
-/**
- * Stem parsing, facet tokens, grouping, and title helpers.
- */
-
 import {
   CHARACTER_ALIASES,
   SCENE_ALIASES,

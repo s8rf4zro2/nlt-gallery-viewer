@@ -1,12 +1,5 @@
 'use strict';
 
-/**
- * NLT Gallery Viewer — renderer entrypoint.
- *
- * Reads pre-built index JSONs from `.cache` and renders them as a virtualised
- * grid of video tiles. Delegates custom video playback to ScenePlayer.
- */
-
 import { GAMES } from './modules/constants.js';
 import { getDom } from './modules/dom.js';
 import { countScenes, groupEntries, normalizeEntry } from './modules/grouping.js';
@@ -26,16 +19,14 @@ import { VirtualGrid } from './modules/virtual-grid.js';
 import { FoldersModalController } from './modules/folders-modal.js';
 import { scenePlayer as ScenePlayer } from './player/player-controller.js';
 
-/* -------------------------------------------------------------------- state */
-
 const state = {
   game: GAMES[0].id,
-  indexes: new Map(), // game id -> MovieEntry[]
-  allScenes: new Map(), // game id -> Scene[]
-  ratingScenes: new Map(), // game:rating -> Scene[]
+  indexes: new Map(),
+  allScenes: new Map(),
+  ratingScenes: new Map(),
   loadError: null,
-  movies: [], // filtered entries
-  scenes: [], // grouped scenes for the grid
+  movies: [],
+  scenes: [],
   cursor: 0,
   modalIndex: -1,
   query: '',
@@ -46,8 +37,6 @@ const state = {
 };
 
 const dom = getDom();
-
-/* ----------------------------------------------------------------- services */
 
 let mediaLoader = null;
 const tilePool = new TilePool({
@@ -74,8 +63,6 @@ const foldersModal = new FoldersModalController({
   },
 });
 
-/* ------------------------------------------------------------------ helpers */
-
 function setStatus(text) {
   dom.status.textContent = text;
 }
@@ -92,8 +79,6 @@ async function readIndex(gameId) {
   return data;
 }
 
-/* --------------------------------------------------------------- filtering */
-
 function applyFilters({ resetScroll = true } = {}) {
   const all = state.indexes.get(state.game) ?? [];
   let allScenes = state.allScenes.get(state.game);
@@ -102,7 +87,6 @@ function applyFilters({ resetScroll = true } = {}) {
     state.allScenes.set(state.game, allScenes);
   }
 
-  // Active rating scenes for facet counts and ribbon
   const ratingKey = `${state.game}:${state.rating}`;
   let ratingScenes = state.ratingScenes?.get(ratingKey);
   if (!ratingScenes) {
@@ -134,13 +118,11 @@ function applyFilters({ resetScroll = true } = {}) {
     });
   }
 
-  // Toggle active class on select elements
   dom.rating?.classList.toggle('is-active', state.rating !== 'nsfw');
   dom.prefix?.classList.toggle('is-active', Boolean(state.prefix));
   dom.character?.classList.toggle('is-active', Boolean(state.character));
   dom.scene?.classList.toggle('is-active', Boolean(state.scene));
 
-  // Toggle clear filters button visibility
   const hasActiveFilter = Boolean(state.prefix || state.character || state.scene || state.query.trim() || state.rating !== 'nsfw');
   if (dom.btnClearFilters) {
     dom.btnClearFilters.hidden = !hasActiveFilter;
@@ -298,8 +280,6 @@ async function reloadAll() {
   setStatus(`Index reloaded · ${state.scenes.length.toLocaleString()} scenes in ${GAMES.find((g) => g.id === state.game)?.label}`);
 }
 
-/* -------------------------------------------------------------------- modal */
-
 function openModal(index) {
   if (index < 0 || index >= state.scenes.length) return;
   state.modalIndex = index;
@@ -337,8 +317,6 @@ function closeModal() {
   grid.scrollCursorIntoView();
   grid.renderNow();
 }
-
-/* ------------------------------------------------------------------- events */
 
 function initEvents() {
   dom.tabs.addEventListener('click', (event) => {
@@ -452,8 +430,6 @@ function initEvents() {
   }
   window.addEventListener('resize', onResize);
 }
-
-/* --------------------------------------------------------------------- boot */
 
 async function boot() {
   initEvents();

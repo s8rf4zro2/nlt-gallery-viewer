@@ -1,7 +1,3 @@
-/**
- * Dialogue scheduling, synchronization, and subtitle overlay management.
- */
-
 export function buildDialogueSchedule(dialogue) {
   if (!Array.isArray(dialogue) || dialogue.length === 0) {
     return { items: [], totalDuration: 0, hasTimestamps: false };

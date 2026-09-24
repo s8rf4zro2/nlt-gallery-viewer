@@ -1,7 +1,3 @@
-/**
- * Scan orchestration for single games and entire library.
- */
-
 import fsp from 'node:fs/promises';
 import path from 'node:path';
 import { CACHE_DIR } from '../config.js';
@@ -20,9 +16,6 @@ async function loadJsonFile(target) {
   }
 }
 
-/**
- * Scan one game and write its index atomically.
- */
 export async function scanGame({ game, dir, gameDir, out, onProgress }) {
   const started = Date.now();
   if (typeof onProgress === 'function') {
@@ -55,7 +48,6 @@ export async function scanGame({ game, dir, gameDir, out, onProgress }) {
     gameIndex = {};
   }
 
-  // Extract game data and dialogue directly from game files if available
   const extracted = await extractGameDialogue(game, gameDir, dir, {
     onProgress: (p) => {
       if (typeof onProgress === 'function') {
@@ -120,9 +112,6 @@ export async function scanGame({ game, dir, gameDir, out, onProgress }) {
   };
 }
 
-/**
- * Scan all configured games.
- */
 export async function scanAll({ onProgress } = {}) {
   const config = await getRootsConfig();
   const results = [];

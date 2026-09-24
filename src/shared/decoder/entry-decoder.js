@@ -1,7 +1,3 @@
-/**
- * Primary cutscene entry decoder.
- */
-
 import {
   PLACEHOLDERS,
   CHARACTERS_BY_GAME,
@@ -23,18 +19,14 @@ import {
 } from './text-utils.js';
 import { isNSFWEntry } from './rating.js';
 
-/**
- * Primary decoding function for any cutscene candidate / entry.
- */
 export function decodeEntry(entry, game, gameIndex = null, terms = null) {
   const name = String(entry.name || entry.base || '').trim();
   const lowerName = name.toLowerCase();
   const overrides = GAME_SPECIFIC_CHARACTERS[game] || {};
   
-  // 1. Check game-index facts first (highest authority from game's CommonEvents)
+  // Check game-index facts first (highest authority from game's CommonEvents)
   const facts = gameIndex?.get ? gameIndex.get(lowerName) : gameIndex?.[game]?.videos?.[name];
   
-  // Extract category
   let category = 'Story Cutscene';
   const prefixMatch = /^([A-Za-z]+)[-_]/.exec(name);
   const rawPrefix = prefixMatch ? prefixMatch[1] : (entry.prefix || 'misc');
@@ -91,9 +83,9 @@ export function decodeEntry(entry, game, gameIndex = null, terms = null) {
     lowerName.startsWith('hetroom') ||
     lowerName.startsWith('herocu') ||
     lowerName.startsWith('herojoeykick') ||
-    lowerName.startsWith('agvl');
+    lowerName.startsWith('agvl') ||
+    lowerName.startsWith('toma-');
 
-  // Extract characters
   const characters = [];
   
   // Check Threesome code e.g. "BC-3sJeJa1", "BC-3sAlTa", "3sKaEm", "BC-3NaPr12"
@@ -203,7 +195,6 @@ export function decodeEntry(entry, game, gameIndex = null, terms = null) {
     }
   }
 
-  // Check facts characters from game data
   if (!characters.length && facts?.characters?.length && !isNonCharStem) {
     for (const c of facts.characters) {
       const cleanC = String(c).trim();
@@ -213,7 +204,6 @@ export function decodeEntry(entry, game, gameIndex = null, terms = null) {
     }
   }
 
-  // Check full spelled-out names at start of stem
   if (!characters.length && !isNonCharStem) {
     const spelledNames = [
       'Autumn', 'Divya', 'Kelli', 'Lucy', 'Madison', 'Nora', 'Julia', 'Grace',
@@ -232,7 +222,6 @@ export function decodeEntry(entry, game, gameIndex = null, terms = null) {
     }
   }
 
-  // Game-specific stem code check
   if (!characters.length && !isNonCharStem) {
     const tokens = name.split(/[-_]+|(?=[A-Z])/).map(t => t.toLowerCase()).filter(Boolean);
     for (const t of tokens) {
@@ -243,7 +232,6 @@ export function decodeEntry(entry, game, gameIndex = null, terms = null) {
     }
   }
 
-  // Game-scoped aliases check
   if (!characters.length && !isNonCharStem) {
     let lead = '';
     const bcMatch = /^BC-([A-Za-z]+)/i.exec(name);
@@ -266,7 +254,6 @@ export function decodeEntry(entry, game, gameIndex = null, terms = null) {
     }
   }
 
-  // Fallback to entry.character if valid
   if (!characters.length && entry.character && !PLACEHOLDERS.has(entry.character.toLowerCase()) && !isNonCharStem) {
     const split = entry.character.split(/,\s*/);
     for (const s of split) {
@@ -277,12 +264,10 @@ export function decodeEntry(entry, game, gameIndex = null, terms = null) {
     }
   }
 
-  // Scene & Act resolution
   let scene = '';
   let act = '';
   let gameScene = '';
 
-  // Special case: Figurine showcase
   if (category === 'Figurine / Showcase' || /^fig/i.test(name)) {
     category = 'Figurine / Showcase';
     if (lowerName.includes('nude')) {
@@ -295,7 +280,6 @@ export function decodeEntry(entry, game, gameIndex = null, terms = null) {
     act = scene;
   }
 
-  // Special case: Studio Logo & Non-character Story Cutscenes
   if (lowerName === 'logo' || lowerName.startsWith('logo.') || lowerName === 'nltlogo') {
     scene = 'Logo';
     act = 'Logo';
@@ -337,13 +321,22 @@ export function decodeEntry(entry, game, gameIndex = null, terms = null) {
     act = 'Interrogation';
     gameScene = 'Nellie Interrogation';
     if (!characters.includes('Nellie')) characters.push('Nellie');
+  } else if (lowerName.startsWith('toma-')) {
+    if (lowerName === 'toma-rightarmb') scene = 'Toma Stone Arm (Leolo)';
+    else if (lowerName === 'toma-rightarmc') scene = 'Toma Stone Arm (Erica)';
+    else if (lowerName === 'toma-rightlegb') scene = 'Toma Stone Leg (Lillian)';
+    else if (lowerName.includes('arm')) scene = 'Toma Stone Arm';
+    else if (lowerName.includes('head')) scene = 'Toma Stone Head';
+    else if (lowerName.includes('leg')) scene = 'Toma Stone Leg';
+    else scene = 'Toma Stone Artifact';
+    act = 'Stone Idol';
+    gameScene = scene;
   } else if (meetMatch) {
     const target = meetMatch[1].replace(/\d+.*$/, '');
     scene = `Meet ${target}`;
     gameScene = scene;
   }
 
-  // Special case: Genesis Porn Shop
   if (/^ps-/i.test(name)) {
     const psKey = name.replace(/^ps-/i, '').replace(/\d+.*$/i, '').toLowerCase();
     const psDef = PS_SCENES[psKey];
@@ -354,21 +347,18 @@ export function decodeEntry(entry, game, gameIndex = null, terms = null) {
     }
   }
 
-  // Special case: Blonde Foursome
   if (/blnd4sm/i.test(name)) {
     scene = 'Blonde Foursome';
     act = 'Foursome';
     gameScene = 'Blonde Foursome';
   }
 
-  // Special case: Big Orgy
   if (/bigorgy/i.test(name)) {
     scene = 'Grand Orgy';
     act = 'Orgy';
     gameScene = 'Grand Orgy';
   }
 
-  // Special case: JuAP (Julia Anal Play)
   if (/^ju[-_]?ap/i.test(name)) {
     scene = 'Anal Play';
     act = 'Anal Play';
@@ -392,7 +382,6 @@ export function decodeEntry(entry, game, gameIndex = null, terms = null) {
     }
   }
 
-  // Decode act from stem
   if (!act) {
     if (/3s/i.test(name) || threeSomeMatch) {
       act = 'Threesome';
@@ -410,7 +399,6 @@ export function decodeEntry(entry, game, gameIndex = null, terms = null) {
     }
   }
 
-  // Check specific act tokens after character prefix
   if (!act) {
     const rem = name.replace(/^(?:Autumn|Divya|Kelli|Lucy|Madison|Nora|Grace|Julia|Amira|Leila|Anya|Olivia|Nia|Cleopatra|Cleo|Empusa|Medusa|Lola|Athena|Hannah|Erica|Chloe|Ella|Carol|Nellie|Lillian|Melissa|Heather|Judy|Kimberly|Andrea|Arianna|Alia|Diana|Emily|Jessica|Clare|Janet|Naomi|Pricia|Tasha|Kaley|Madalyn|Sofia|Evie|Amber|Valerie|Au|Ke|No|Lu|Di|Ma|Gr|Ju|Am|Le|Ay|Ol|Ni|Cp|Al|Cl|Cr|Em|Ev|Ja|Je|Ka|Md|Ml|Na|Pr|So|Ta|Ad|Ar|Ca|Ba|Ch|Deb|El|Er|Ha|Hn|He|Ki|Li|Me|Ne)[-_]?/i, '');
     const token = rem.split(/[-_0-9]+/)[0]?.toLowerCase() || rem.toLowerCase().replace(/[-_].*$/, '').replace(/\d+.*$/, '');
@@ -422,7 +410,6 @@ export function decodeEntry(entry, game, gameIndex = null, terms = null) {
     }
   }
 
-  // Check token match in stem
   if (!act) {
     const cleanStem = name.replace(/^BC-|^PS-|^Fig-|^MZ-|^MoanZone-?/, '');
     const tokens = cleanStem.split(/[-_]+|(?=[A-Z])/).map(t => t.toLowerCase().replace(/\d+$/, '')).filter(Boolean);
@@ -434,7 +421,6 @@ export function decodeEntry(entry, game, gameIndex = null, terms = null) {
     }
   }
 
-  // Final scene resolution
   if (!scene || PLACEHOLDERS.has(scene.toLowerCase()) || isBogusSceneTitle(scene) || scene.length <= 2) {
     if (act) {
       scene = act;
@@ -450,7 +436,6 @@ export function decodeEntry(entry, game, gameIndex = null, terms = null) {
     }
   }
 
-  // Display title resolution
   let title = '';
   if (scene === 'Logo') {
     title = 'Studio Logo';
@@ -491,7 +476,9 @@ export function decodeEntry(entry, game, gameIndex = null, terms = null) {
     act,
     category,
     prefix: rawPrefix,
-  });
+    characters: filteredChars,
+    game,
+  }, game);
 
   const tags = [];
   if (category) tags.push(`series:${category}`);

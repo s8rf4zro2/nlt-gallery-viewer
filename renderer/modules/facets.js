@@ -1,9 +1,5 @@
 import { isBogusSceneTitle, CANONICAL_ACT_NAMES } from '../../src/shared/decoder/index.js';
 
-/**
- * Fill one facet `<select>` from a value -> count map: highest count first,
- * ties broken alphabetically.
- */
 export function renderFacetOptions(select, counts, current, { allLabel, noun = 'scenes' }) {
   if (!select) return '';
 
@@ -26,9 +22,6 @@ export function renderFacetOptions(select, counts, current, { allLabel, noun = '
   return select.value;
 }
 
-/**
- * Category / Prefix options.
- */
 export function renderPrefixOptions(select, items, currentPrefix) {
   const counts = new Map();
   for (const item of items) {
@@ -41,13 +34,9 @@ export function renderPrefixOptions(select, items, currentPrefix) {
   });
 }
 
-/**
- * Canonical character options with scene counts.
- */
 export function renderCharacterOptions(select, items, currentCharacter, { activePrefix = '' } = {}) {
   const counts = new Map();
   for (const item of items) {
-    // If active category / prefix filter is set, scope to matching items
     if (activePrefix && item.prefix !== activePrefix && item.category !== activePrefix) continue;
 
     const chars = item.characters
@@ -67,16 +56,10 @@ export function renderCharacterOptions(select, items, currentCharacter, { active
   });
 }
 
-/**
- * Clean human-readable scene / act options with scene counts.
- * Excludes bogus prompt titles ('Normal', 'Angle 1') and scopes to character.
- */
 export function renderSceneOptions(select, items, currentScene, { activeCharacter = '', activePrefix = '' } = {}) {
   const counts = new Map();
   for (const item of items) {
-    // If active category / prefix is set, scope to matching items
     if (activePrefix && item.prefix !== activePrefix && item.category !== activePrefix) continue;
-    // If active character is set, scope to matching items (case-insensitive)
     if (activeCharacter) {
       const chars = item.characters
         ? (item.characters instanceof Set ? [...item.characters] : item.characters)
@@ -96,9 +79,6 @@ export function renderSceneOptions(select, items, currentScene, { activeCharacte
   });
 }
 
-/**
- * Render horizontal character quick-filter ribbon pills.
- */
 export function renderCharacterRibbon(container, items, currentCharacter, onSelect, { activePrefix = '' } = {}) {
   if (!container) return;
 
@@ -122,7 +102,6 @@ export function renderCharacterRibbon(container, items, currentCharacter, onSele
 
   container.textContent = '';
 
-  // "All" button pill
   const allBtn = document.createElement('button');
   allBtn.type = 'button';
   allBtn.className = `char-pill ${!currentCharacter ? 'is-active' : ''}`;
@@ -138,7 +117,6 @@ export function renderCharacterRibbon(container, items, currentCharacter, onSele
   allBtn.onclick = () => onSelect('');
   container.append(allBtn);
 
-  // Character pills sorted by count descending, then alphabetical
   const sorted = [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
   for (const [charName, count] of sorted) {
     const btn = document.createElement('button');

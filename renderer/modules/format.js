@@ -1,7 +1,3 @@
-/**
- * Formatting and path helper utilities for the renderer.
- */
-
 export function toPath(value) {
   if (typeof value !== 'string' || value.trim() === '') return null;
   return value.replace(/\\/g, '/');
@@ -32,10 +28,8 @@ export function formatTime(seconds) {
   return `${m}:${String(s).padStart(2, '0')}`;
 }
 
-/** Absolute path -> URL the renderer is allowed to load via bridge. */
 export const mediaUrl = (absPath) => (absPath ? window.nlt?.media?.url(absPath) : null);
 
-/** Reveal a file in the OS file manager. */
 export function revealPath(absPath) {
   if (!absPath) return false;
   window.nlt?.shell?.showItem(absPath)?.catch(() => {});

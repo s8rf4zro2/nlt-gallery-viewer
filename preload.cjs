@@ -1,11 +1,5 @@
 'use strict';
 
-/**
- * Preload bridge.
- *
- * Runs sandboxed with context isolation, exposing safe APIs on `window.nlt`.
- */
-
 const { contextBridge, ipcRenderer } = require('electron');
 
 const call = (channel, ...args) => ipcRenderer.invoke(channel, ...args);
