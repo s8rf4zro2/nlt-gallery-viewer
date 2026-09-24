@@ -3,7 +3,12 @@ import path from 'node:path';
 import { PROJECT_ROOT, CACHE_DIR } from './config.js';
 import { getRootsConfig, saveRootsConfig } from './roots.js';
 import { readCache } from './cache.js';
-import { detectMoviesDir, detectGamesFromParent, scanGame } from './scanner.js';
+import {
+  detectMoviesDir,
+  detectGamesFromParent,
+  scanGameWithWorker,
+  terminateScannerWorker,
+} from './scanner.js';
 
 export function registerIpc() {
   ipcMain.handle('nlt:app:info', () => ({
@@ -65,24 +70,33 @@ export function registerIpc() {
     const updatedGames = { ...current.games };
     const scanResults = [];
 
-    for (const [gameKey, paths] of Object.entries(gamesConfig || {})) {
-      if (!paths || !paths.moviesDir) continue;
-      const gameDir = paths.gameDir || paths.moviesDir;
-      updatedGames[gameKey] = {
-        gameDir,
-        moviesDir: paths.moviesDir,
-      };
-      const outPath = path.join(CACHE_DIR, `index-${gameKey}.json`);
-      const res = await scanGame({
-        game: gameKey,
-        dir: paths.moviesDir,
-        gameDir,
-        out: outPath,
-      });
-      scanResults.push(res);
-    }
+    try {
+      for (const [gameKey, paths] of Object.entries(gamesConfig || {})) {
+        if (!paths || !paths.moviesDir) continue;
+        const gameDir = paths.gameDir || paths.moviesDir;
+        updatedGames[gameKey] = {
+          gameDir,
+          moviesDir: paths.moviesDir,
+        };
+        const outPath = path.join(CACHE_DIR, `index-${gameKey}.json`);
+        const res = await scanGameWithWorker({
+          game: gameKey,
+          dir: paths.moviesDir,
+          gameDir,
+          out: outPath,
+          onProgress: (prog) => {
+            try {
+              _event.sender.send('nlt:scan:progress', prog);
+            } catch {}
+          },
+        });
+        scanResults.push(res);
+      }
 
-    await saveRootsConfig({ roots: current.roots, games: updatedGames });
-    return { success: true, results: scanResults };
+      await saveRootsConfig({ roots: current.roots, games: updatedGames });
+      return { success: true, results: scanResults };
+    } finally {
+      terminateScannerWorker();
+    }
   });
 }

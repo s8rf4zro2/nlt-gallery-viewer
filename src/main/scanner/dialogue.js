@@ -4,6 +4,7 @@
 
 import fsp from 'node:fs/promises';
 import path from 'node:path';
+import { parseMapFilesBatch } from './map-parser.js';
 
 export const CHARACTERS_BY_GAME = {
   nadia: [
@@ -113,7 +114,7 @@ export async function findGameDataDir(gameDir, moviesDir) {
   return null;
 }
 
-export async function extractGameDialogue(game, gameDir, moviesDir) {
+export async function extractGameDialogue(game, gameDir, moviesDir, { onProgress } = {}) {
   const dataDir = await findGameDataDir(gameDir, moviesDir);
   if (!dataDir) return null;
 
@@ -279,51 +280,18 @@ export async function extractGameDialogue(game, gameDir, moviesDir) {
     }
   }
 
-  // Scan map files for choice titles
+  // Scan map files for choice titles in concurrent batches
   try {
     const dirEntries = await fsp.readdir(dataDir);
     const mapFiles = dirEntries.filter((f) => /^Map\d+\.json$/i.test(f));
-    for (const mf of mapFiles) {
-      try {
-        const mData = JSON.parse(await fsp.readFile(path.join(dataDir, mf), 'utf8'));
-        for (const ev of mData.events || []) {
-          if (!ev) continue;
-          for (const page of ev.pages || []) {
-            let pendingTitle = null;
-            for (const cmd of page.list || []) {
-              if (cmd.code === 102) {
-                const choices = cmd.parameters[0];
-                if (Array.isArray(choices) && choices.length > 0) {
-                  const cleaned = String(choices[0])
-                    .replace(/\\[A-Za-z]+(?:\[[\d\w]+\])?/g, '')
-                    .replace(/<[^>]+>/g, '')
-                    .trim();
-                  if (cleaned && !BOGUS_TITLES.has(cleaned.toLowerCase()) && cleaned.length < 35) {
-                    pendingTitle = cleaned;
-                  }
-                }
-              }
-
-              let vid = null;
-              if (cmd.code === 355 || cmd.code === 655) {
-                const text = cmd.parameters[0] || '';
-                const vm = /(?:loadVideo|newVideo|playVideo)\('([^']+)'\)/.exec(text);
-                if (vm) vid = vm[1];
-              } else if (cmd.code === 357) {
-                const param = cmd.parameters[3];
-                if (param && param.id) vid = String(param.id);
-              }
-
-              if (vid) {
-                const rec = note(vid);
-                if (pendingTitle && !rec.titles.includes(pendingTitle)) {
-                  rec.titles.push(pendingTitle);
-                }
-              }
-            }
-          }
+    const titlesByVid = await parseMapFilesBatch(dataDir, mapFiles, { onProgress });
+    for (const [vid, titles] of Object.entries(titlesByVid)) {
+      const rec = note(vid);
+      for (const title of titles) {
+        if (!rec.titles.includes(title)) {
+          rec.titles.push(title);
         }
-      } catch {}
+      }
     }
   } catch {}
 

@@ -43,6 +43,11 @@ contextBridge.exposeInMainWorld('nlt', {
     detect: (folderPath) => call('nlt:games:detect', folderPath),
     getConfig: () => call('nlt:games:getConfig'),
     saveAndScan: (gamesConfig) => call('nlt:games:saveAndScan', gamesConfig),
+    onScanProgress: (callback) => {
+      const listener = (_event, data) => callback(data);
+      ipcRenderer.on('nlt:scan:progress', listener);
+      return () => ipcRenderer.removeListener('nlt:scan:progress', listener);
+    },
   },
 
   media: {

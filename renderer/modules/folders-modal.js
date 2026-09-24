@@ -212,8 +212,17 @@ export class FoldersModalController {
 
     const el = this.getElements();
     if (el.scanProgress) el.scanProgress.hidden = false;
-    if (el.scanStatus) el.scanStatus.textContent = 'Scanning movie files & dialogue…';
+    if (el.scanStatus) el.scanStatus.textContent = 'Starting background scanner…';
     if (el.btnSave) el.btnSave.disabled = true;
+
+    let unsubscribe = null;
+    if (typeof window.nlt?.games?.onScanProgress === 'function') {
+      unsubscribe = window.nlt.games.onScanProgress((prog) => {
+        if (el.scanStatus && prog?.message) {
+          el.scanStatus.textContent = prog.message;
+        }
+      });
+    }
 
     try {
       const configToSave = {};
@@ -232,6 +241,7 @@ export class FoldersModalController {
     } catch (err) {
       if (el.scanStatus) el.scanStatus.textContent = `Scan failed: ${err.message || err}`;
     } finally {
+      if (unsubscribe) unsubscribe();
       this.scanning = false;
       if (el.scanProgress) el.scanProgress.hidden = true;
       if (el.btnSave) el.btnSave.disabled = !this.hasValidGames();

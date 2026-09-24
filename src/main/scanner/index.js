@@ -17,6 +17,8 @@ export * from './pairer.js';
 export * from './writer.js';
 export * from './detector.js';
 export * from './orchestrator.js';
+export * from './map-parser.js';
+export * from './worker-client.js';
 
 if (
   import.meta.main ||

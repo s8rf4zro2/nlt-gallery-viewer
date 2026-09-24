@@ -23,10 +23,28 @@ async function loadJsonFile(target) {
 /**
  * Scan one game and write its index atomically.
  */
-export async function scanGame({ game, dir, gameDir, out }) {
+export async function scanGame({ game, dir, gameDir, out, onProgress }) {
   const started = Date.now();
+  if (typeof onProgress === 'function') {
+    onProgress({
+      game,
+      step: 'reading',
+      percent: 10,
+      message: `Scanning ${game}: reading movies directory…`,
+    });
+  }
+
   const fileNames = await fsp.readdir(dir);
   const candidates = await statAll(dir, fileNames);
+
+  if (typeof onProgress === 'function') {
+    onProgress({
+      game,
+      step: 'dialogue',
+      percent: 30,
+      message: `Scanning ${game}: extracting game dialogue & choices…`,
+    });
+  }
 
   let [gameIndex, terms] = await Promise.all([
     loadJsonFile(path.join(CACHE_DIR, 'game-index.json')),
@@ -38,7 +56,13 @@ export async function scanGame({ game, dir, gameDir, out }) {
   }
 
   // Extract game data and dialogue directly from game files if available
-  const extracted = await extractGameDialogue(game, gameDir, dir);
+  const extracted = await extractGameDialogue(game, gameDir, dir, {
+    onProgress: (p) => {
+      if (typeof onProgress === 'function') {
+        onProgress({ game, ...p });
+      }
+    },
+  });
   if (extracted) {
     gameIndex[game] = extracted;
     try {
@@ -51,12 +75,39 @@ export async function scanGame({ game, dir, gameDir, out }) {
     } catch {}
   }
 
+  if (typeof onProgress === 'function') {
+    onProgress({
+      game,
+      step: 'pairing',
+      percent: 80,
+      message: `Scanning ${game}: classifying & pairing ${candidates.length} clips…`,
+    });
+  }
+
   const entries = pairCandidates(game, candidates, gameIndex, terms);
   entries.sort(
     (a, b) => compareNatural(a.prefix, b.prefix) || compareNatural(a.name, b.name),
   );
 
+  if (typeof onProgress === 'function') {
+    onProgress({
+      game,
+      step: 'saving',
+      percent: 95,
+      message: `Scanning ${game}: saving index (${entries.length} scenes)…`,
+    });
+  }
+
   await writeIndex(out, entries);
+
+  if (typeof onProgress === 'function') {
+    onProgress({
+      game,
+      step: 'done',
+      percent: 100,
+      message: `Scanning ${game}: complete (${entries.length} scenes).`,
+    });
+  }
 
   return {
     game,
@@ -72,7 +123,7 @@ export async function scanGame({ game, dir, gameDir, out }) {
 /**
  * Scan all configured games.
  */
-export async function scanAll() {
+export async function scanAll({ onProgress } = {}) {
   const config = await getRootsConfig();
   const results = [];
   const gamesToScan = {};
@@ -105,6 +156,7 @@ export async function scanAll() {
         dir: paths.moviesDir,
         gameDir: paths.gameDir || paths.moviesDir,
         out,
+        onProgress,
       }),
     );
   }
